@@ -1,5 +1,5 @@
 import View from "./view.js";
-
+import Store from "./store.js";
 // const App = {
 //   $: {
 //     menu: document.querySelector("[data-id='menu']"),
@@ -137,13 +137,32 @@ import View from "./view.js";
 // };
 
 // window.addEventListener("load", App.init);
+const players = [
+  {
+    id: 1,
+    name: "Player 1",
+    iconClass: "fa-x",
+    colorClass: "turquoise",
+  },
+  {
+    id: 2,
+    name: "Player 2",
+    iconClass: "fa-o",
+    colorClass: "yellow",
+  },
+];
 
 function init() {
   const view = new View();
+  const store = new Store(players);
+
+  console.log(store.game);
 
   view.bindGameResetEvent((event) => {
-    console.log("Reset event");
-    console.log(event);
+    view.closeModal();
+    store.reset();
+    view.clearMoves();
+    view.setTurnIndicator(store.game.currentPlayer);
   });
 
   view.bindNewRoundEvent((event) => {
@@ -151,9 +170,26 @@ function init() {
     console.log(event);
   });
 
-  view.bindPlayerMoveEvent((event) => {
-    view.setTurnIndicator(2);
-    view.handlePlayerMove(event.target, 1);
+  view.bindPlayerMoveEvent((square) => {
+    const existingMove = store.game.moves.find(
+      (move) => move.squareId === +square.id
+    );
+
+    if (existingMove) {
+      return;
+    }
+
+    view.handlePlayerMove(square, store.game.currentPlayer);
+
+    store.playerMove(+square.id);
+
+    if (store.game.status.isComplete) {
+      view.openModal(
+        store.game.status.winner ? `${store.game.winner} wins!` : "Tie!"
+      );
+    }
+
+    view.setTurnIndicator(store.game.currentPlayer);
   });
 
   console.log(view.$.turn);

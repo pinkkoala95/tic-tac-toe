@@ -21,6 +21,7 @@ export default class View {
 
   bindGameResetEvent(handler) {
     this.$.resetBtn.addEventListener("click", handler);
+    this.$.modalBtn.addEventListener("click", handler);
   }
 
   bindNewRoundEvent(handler) {
@@ -29,7 +30,22 @@ export default class View {
 
   bindPlayerMoveEvent(handler) {
     this.$$.squares.forEach((square) => {
-      square.addEventListener("click", handler);
+      square.addEventListener("click", () => handler(square));
+    });
+  }
+
+  openModal(message) {
+    this.$.modal.classList.remove("hidden");
+    this.$.modalText.innerText = message;
+  }
+
+  closeModal(message) {
+    this.$.modal.classList.add("hidden");
+  }
+
+  clearMoves() {
+    this.$$.squares.forEach((square) => {
+      square.replaceChildren();
     });
   }
 
@@ -42,16 +58,14 @@ export default class View {
     icon.classList.toggle("fa-chevron-up");
   }
 
-  setTurnIndicator(player) {
+  setTurnIndicator(player, opponent) {
     const icon = document.createElement("i");
     const label = document.createElement("p");
 
-    this.$.turn.classList.add(player === 1 ? "yellow" : "turquoise");
-    this.$.turn.classList.remove(player === 1 ? "turquoise" : "yellow");
+    icon.classList.add("fa-solid", player.colorClass, player.iconClass);
 
-    icon.classList.add("fa-solid", player === 1 ? "fa-x" : "fa-o");
-    label.innerText =
-      player === 1 ? "Player 1, you're up!" : "Player 2, you're up!";
+    label.classList.add(player.colorClass);
+    label.innerText = `${player.name}, you're up!`;
 
     this.$.turn.replaceChildren(icon, label);
   }
@@ -59,8 +73,8 @@ export default class View {
   handlePlayerMove(squareEl, player) {
     const icon = document.createElement("i");
 
-    icon.classList.add("fa-solid", player === 1 ? "fa-x" : "fa-o");
-    icon.classList.add("fa-solid", player === 1 ? "yellow" : "turquoise");
+    icon.classList.add("fa-solid", player.iconClass, player.colorClass);
+
     squareEl.replaceChildren(icon);
   }
 
